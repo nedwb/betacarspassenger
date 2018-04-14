@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    <title>Beta Cars</title>
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+
+    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+</head>
+
+<body>    
+    <div data-role="page" id="login">
+        <div data-role="header">
+            <h1>Login</h1>
+        </div> <!-- header -->
+        <div data-role="main" class="ui-content">
+            <form name="loginform" action="#" onsubmit="login()">
+                <input type="text" placeholder="Mobile No.*" required autocomplete="off" id='l_mobile' />
+                <input type="password" placeholder="Password*" required autocomplete="off" id='l_password'/>
+                <br>
+                <input type="submit" value="Go"/>
+            </form>
+            <button id="btnCancelLogin" onclick="index.html'">Cancel</button>
+        </div> <!-- main -->
+        <div data-role="footer">
+            <div id="result2"></div>
+        </div> <!-- footer -->
+    </div> <!-- page --> 
+    
+    <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
+
+    <script>
+        function login()
+        {
+            var baseUrl = "https://betacars-webportal.000webhostapp.com";
+            var mobile = document.getElementById('l_mobile').value;
+            var password = document.getElementById('l_password').value;
+
+            $.post(baseUrl + '/api_passenger_login.php', {'mobile_no':mobile, 'password':password}, function (results) {
+                    var jsonObj = JSON.parse(results);
+                    var return_code = (jsonObj.status[0].return_code);
+                    if (return_code == 0) {
+                        window.alert("Welcome to Beta Cars, " + jsonObj.data[0].f_name + " " + jsonObj.data[0].l_name + "!");
+                        localStorage.setItem("mobile",mobile);
+                        window.location.href = "home.html";
+                    }
+                    else if(return_code == 1) {
+                        window.alert("Mobile no. is not registered. Please sign up.");
+                    }
+                    else if(return_code == 2) {
+                        window.alert("Cannot login, password incorrect!");
+                    }
+                })
+        }
+    </script>
+</body>
+
+</html>

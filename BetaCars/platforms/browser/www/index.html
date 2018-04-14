@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    <title>Beta Cars</title>
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+
+    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+</head>
+
+<body>
+    <div data-role="page" id="index">
+        <div data-role="header">
+        </div> <!-- header -->
+        <div data-role="main" class="ui-content">
+            <img src="img/betacars.png" alt="logo">
+            <br>
+            <button onclick="location.href='login.html'">Login</button>
+            <button onclick="location.href='signup.html'">Not Registered?</button>
+        </div> <!-- main -->
+        <div data-role="footer">
+        </div> <!-- footer -->
+    </div> <!-- page -->
+        
+    <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
+    <script type="text/javascript">
+        app.initialize();
+    </script>
+</body>
+
+</html>

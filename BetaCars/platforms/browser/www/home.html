@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Beta Cars</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+      
+      <link rel="stylesheet" type="text/css" href="css/main.css">
+      <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+      <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAn79_RPcO8QoDo5vatp7TMnWqB3fTf8FM&libraries=places&callback=initMap"async defer></script>
+  </head>
+  <body>
+      <input id="origin-input" class="controls" type="text" placeholder="Enter an origin location">
+      <input id="destination-input" class="controls" type="text" placeholder="Enter a destination location">
+      <div id="map"></div>
+      
+      <button id="btnRegular" onclick="btnBookClicked('regular')" class="controls_btn">Regular Car</button>
+      <button id="btnPremium" onclick="btnBookClicked('premium')" class="controls_btn">Premium Car</button>
+      
+      <script>
+          var mobile = localStorage.getItem("mobile");
+          var origin_placeid;
+          var destin_placeid;
+          var origin_position;
+          var destin_position;
+          var duration;
+          var distance;
+          
+          function initMap() {
+              var origPlaceId;
+              
+              var map = new google.maps.Map(document.getElementById('map'), {
+                  mapTypeControl: false,
+                  center: {lat: 14.5995, lng: 120.9842},
+                  zoom: 15,
+                  fullscreenControl: false
+              });
+              
+              navigator.geolocation.getCurrentPosition(function(position) {
+                  var pos = {
+                      lat: position.coords.latitude,
+                      lng: position.coords.longitude
+                  };
+                  map.setCenter(pos);
+                  
+                  // Capture the origin position coordinates.
+                  origin_position = position.coords.latitude + "," + position.coords.longitude;
+                  
+                  // Use Geocoder to get current address and fill out the origin text box.
+                  var geocoder = new google.maps.Geocoder;
+                  var latlng = {lat: position.coords.latitude, lng: position.coords.longitude};
+                  geocoder.geocode({'location': latlng}, function(results, status) {
+                      if (status === 'OK') {
+                          if (results[0]) {
+                              document.getElementById('origin-input').value = results[0].formatted_address;
+                              origin_placeid = results[0].place_id;
+                          } else {
+                              window.alert('No results found');
+                          }
+                      } else {
+                          window.alert('Geocoder failed due to: ' + status);
+                      }
+                  });
+              });
+              
+              new AutocompleteDirectionsHandler(map);
+          }
+          
+          function btnBookClicked(input) {
+              if (!origin_placeid || !destin_placeid) {
+                  window.alert("Please enter your destination.");
+              }
+              else {
+                  //Geocode the placeId to get the coordinates.
+            var geocoder = new google.maps.Geocoder;
+            geocoder.geocode({'placeId': destin_placeid}, function(results, status) {
+                if (status === 'OK') {
+                    if (results[0]) {
+                        // Capture the destination position coordinates.
+                        destin_position = results[0].geometry.location.lat() + "," + results[0].geometry.location.lng();
+                        
+                        // Use the DistanceMaxtrixService to calculate distance and duration between
+                        // the origin and destination coordinates.
+                        var service = new google.maps.DistanceMatrixService;
+                        service.getDistanceMatrix({
+                            origins: [origin_position],        
+                            destinations: [destin_position],
+                            travelMode: 'DRIVING',
+                            unitSystem: google.maps.UnitSystem.METRIC,
+                            avoidHighways: false,
+                            avoidTolls: false
+                        }, function(response, status) {
+                            if (status !== 'OK') {
+                                alert('Error was: ' + status);
+                            } else {
+                                var baseUrl = "https://betacars-webportal.000webhostapp.com";
+                                var originList = response.originAddresses;
+                                var destinationList = response.destinationAddresses;
+                                var fare = 100;
+                                distance = response.rows[0].elements[0].distance.text;
+                                duration = response.rows[0].elements[0].duration.text;
+                                
+                                $.post(baseUrl + '/api_passenger_booking.php', {'mobile':mobile, 'car_type':input, 'origin':origin_position, 'destination':destin_position, 'distance':distance, 'duration':duration, 'fare':fare}, function (results) {  
+                                    var jsonObj = JSON.parse(results);
+                                    var return_code = (jsonObj.status[0].return_code);
+                                    var return_msg = (jsonObj.status[0].return_msg);
+                                    if (return_code == 0) {
+                                        var driver_name = (jsonObj.data[0].f_name) + " " + (jsonObj.data[0].l_name);
+                                        var driver_car = (jsonObj.data[0].car);
+                                        var driver_plate = (jsonObj.data[0].driver_plate);
+                                        window.alert("Driver found! " + "Name: " + driver_name + " Car: " + driver_car + " Plate No: " + driver_car);
+                                        window.location.href = "./track.html";
+                                    }
+                                    else {
+                                        window.alert("Message is: " + return_msg);
+                                    }
+                                })
+                            }
+                        });
+                    } else {
+                        window.alert('No results found');
+                    }
+                    } else {
+                        window.alert('Geocoder failed due to: ' + status);
+                    }
+                });    
+              }
+          }
+                    
+       /**
+        * @constructor
+       */
+        function AutocompleteDirectionsHandler(map) {
+            this.map = map;
+            this.originPlaceId = null;
+            this.destinationPlaceId = null;
+            this.travelMode = 'DRIVING';
+            var originInput = document.getElementById('origin-input');
+            var destinationInput = document.getElementById('destination-input');
+            var data_tbl = document.getElementById('data-table');
+            var btnRegular = document.getElementById('btnRegular');
+            var btnPremium = document.getElementById('btnPremium');
+            this.directionsService = new google.maps.DirectionsService;
+            this.directionsDisplay = new google.maps.DirectionsRenderer;
+            this.directionsDisplay.setMap(map);
+
+            var originAutocomplete = new google.maps.places.Autocomplete(
+                originInput, {placeIdOnly: true});
+            var destinationAutocomplete = new google.maps.places.Autocomplete(
+                destinationInput, {placeIdOnly: true});
+
+            this.setupPlaceChangedListener(originAutocomplete, 'ORIG');
+            this.setupPlaceChangedListener(destinationAutocomplete, 'DEST');
+
+            this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(originInput);
+            this.map.controls[google.maps.ControlPosition.LEFT_TOP].push(destinationInput);
+            this.map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(btnRegular);
+            this.map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(btnPremium);
+        }
+                           
+        // Sets a listener on a radio button to change the filter type on Places
+        // Autocomplete.
+        AutocompleteDirectionsHandler.prototype.setupClickListener = function(id, mode) {
+            var radioButton = document.getElementById(id);
+            var me = this;
+            radioButton.addEventListener('click', function() {
+                me.travelMode = mode;
+                me.route();
+            });
+        };
+
+        AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function(autocomplete, mode) {
+            var me = this;
+            autocomplete.bindTo('bounds', this.map);
+            autocomplete.addListener('place_changed', function() {
+                var place = autocomplete.getPlace();
+                if (!place.place_id) {
+                    window.alert("Please select an option from the dropdown list.");
+                    return;
+                }
+                if (mode === 'ORIG') {
+                    me.originPlaceId = place.place_id;
+                } else {
+                    me.destinationPlaceId = place.place_id;
+                }
+                me.route();
+            });
+
+        };
+
+        AutocompleteDirectionsHandler.prototype.route = function() {
+            if (!this.originPlaceId) {
+                this.originPlaceId = origin_placeid;
+            }
+            if (!this.originPlaceId || !this.destinationPlaceId) {
+                return;
+            }
+
+            // Capture the places ID to be sent to the API.
+            origin_placeid = this.originPlaceId;
+            destin_placeid = this.destinationPlaceId;
+
+            var me = this;
+            this.directionsService.route({
+                origin: {'placeId': this.originPlaceId},
+                destination: {'placeId': this.destinationPlaceId},
+                travelMode: this.travelMode
+            }, function(response, status) {
+                if (status === 'OK') {
+                    me.directionsDisplay.setDirections(response);
+                } else {
+                    window.alert('Directions request failed due to ' + status);
+                }
+            });
+        };
+    </script>
+  </body>
+</html>
