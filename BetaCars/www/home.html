@@ -15,8 +15,8 @@
       <input id="destination-input" class="controls" type="text" placeholder="Enter a destination location">
       <div id="map"></div>
       
-      <button id="btnRegular" onclick="btnBookClicked('regular')" class="controls_btn">Regular Car</button>
-      <button id="btnPremium" onclick="btnBookClicked('premium')" class="controls_btn">Premium Car</button>
+      <button id="btnRegular" onclick="btnBookClicked('Regular')" class="controls_btn">Regular Car</button>
+      <button id="btnPremium" onclick="btnBookClicked('Premium')" class="controls_btn">Premium Car</button>
       
       <script>
           var mobile = localStorage.getItem("mobile");
@@ -101,41 +101,39 @@
                                 distance = response.rows[0].elements[0].distance.text;
                                 duration = response.rows[0].elements[0].duration.text;
                                 
-                                // Define the fare calculation. For now, hardcode it here.
-                                if (input == "premium") {
-                                    var baseFare = 90;
-                                    var distanceRate = parseInt(distance) * 13.75;
-                                }
-                                else {
-                                    var baseFare = 60;
-                                    var distanceRate = parseInt(distance) * 8.55;
-                                }
                                 // Calculate time to determine if peak or regular hours.
                                 var d = new Date();
                                 var hours = d.getHours();
                                 var mins = d.getMinutes();
                                 var timeInMinutes = ((parseInt(hours) * 60) + parseInt(mins));
                                 
-                                // Peak hours: 7AM t 10AM and 4PM to 8PM
-                                if ((timeInMinutes >= 420 && timeInMinutes <= 600) || (timeInMinutes >= 960 && timeInMinutes <= 1200))
-                                    var surge = 1.50;
-                                else
-                                    var surge = 1.02;
-                                
-                                // Check time to determine the applicable surge.
-                                var fare = ((parseInt(baseFare) + distanceRate) * parseInt(surge));
-                                window.alert("Fare is: " + fare);
-                                
-                                $.post(baseUrl + '/api_passenger_booking.php', {'mobile':mobile, 'car_type':input, 'origin':origin_position, 'destination':destin_position, 'distance':distance, 'duration':duration, 'fare':fare}, function (results) {  
+                                $.post(baseUrl + '/api_passenger_farequery.php', {'mobile':mobile, 'car_type':input, 'minutes':timeInMinutes}, function (results) {  
                                     var jsonObj = JSON.parse(results);
                                     var return_code = (jsonObj.status[0].return_code);
                                     var return_msg = (jsonObj.status[0].return_msg);
                                     if (return_code == 0) {
-                                        var driver_name = (jsonObj.data[0].f_name) + " " + (jsonObj.data[0].l_name);
-                                        var driver_car = (jsonObj.data[0].car);
-                                        var driver_plate = (jsonObj.data[0].driver_plate);
-                                        window.alert("Driver found! " + "Name: " + driver_name + " Car: " + driver_car + " Plate No: " + driver_car);
-                                        window.location.href = "./track.html";
+                                        var baseFare = (jsonObj.data[0].base_fare);
+                                        var surge = (jsonObj.data[0].surge);
+                                        var distanceRate = ((parseFloat(distance) / 1.5) * (parseFloat(jsonObj.data[0].distance_rate)));
+
+                                        //Compute the fare.
+                                        var fare = ((parseFloat(baseFare) + parseFloat(distanceRate)) * parseFloat(surge)).toFixed(2);
+                                        
+                                        $.post(baseUrl + '/api_passenger_booking.php', {'mobile':mobile, 'car_type':input, 'origin':origin_position, 'destination':destin_position, 'distance':distance, 'duration':duration, 'fare':fare}, function (results) {  
+                                            var jsonObj = JSON.parse(results);
+                                            var return_code = (jsonObj.status[0].return_code);
+                                            var return_msg = (jsonObj.status[0].return_msg);
+                                            if (return_code == 0) {
+                                                var driver_name = (jsonObj.data[0].f_name) + " " + (jsonObj.data[0].l_name);
+                                                var driver_car = (jsonObj.data[0].car);
+                                                var driver_plate = (jsonObj.data[0].driver_plate);
+                                                window.alert("Driver found! " + "Name: " + driver_name + " Car: " + driver_car + " Plate No: " + driver_car);
+                                            window.location.href = "./track.html";
+                                        }
+                                        else {
+                                            window.alert(return_msg);
+                                        }
+                                        })
                                     }
                                     else {
                                         window.alert(return_msg);
