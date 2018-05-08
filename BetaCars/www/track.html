@@ -1,232 +1,117 @@
+
 <!DOCTYPE HTML>
 <html>
-    <head>
-        <title>Geolocation Watchposition</title>
+<head>
+    <title>Geolocation Watchposition</title>
 
-        <!-- for mobile view -->
-        <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
-        <link rel="stylesheet" type="text/css" href="css/track.css">
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-        <script type="text/javascript" src="https://maps.google.com/maps/api/js?v=3&sensor=false&language=en"></script>
-        <script type="text/javascript">
-            function initTripDetails()
-            {
-                var baseUrl = "http://localhost:8080/betacars";
+    <!-- for mobile view -->
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
 
-                //2018-05-05 JYDP:Will locate trip_id pass by home.html to track.html via GET method
-                var parameter = window.location.search.substring(1).split("=");//Return value should be trip_id=<the id of the trip> e.g.,trip_id=23
-                var trip_id = parameter[1];
-                $.ajax({
-                    type: "POST",
-                    data: {
-                        "trip_id": trip_id
-                    },
-                    url: baseUrl + '/api_driver_querytrip_details.php',
-                    dataType: "json",
-                    success: function (JSONObject) {
-                        if (JSONObject.status[0].return_code == 0) //Retrieving  booking details was a success
-                        {
-                            var driverHTML = "";
-                            driverHTML += "<tr>";
-                            driverHTML += "<td class='driver_name' >" + JSONObject.data[0].first_name + " " + JSONObject.data[0].last_name + "</td>";
-                            driverHTML += "</tr>";
-                            driverHTML += "<tr>";
-                            driverHTML += "<td>" + JSONObject.data[0].car + " " + JSONObject.data[0].plate_no + "</td>";
-                            driverHTML += "</tr>";
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script type="text/javascript" src="https://maps.google.com/maps/api/js?v=3&sensor=false&language=en"></script>
+    <script type="text/javascript">
 
-                            var tripHTML = "";
+        // you can specify the default lat long
+        var map,
+            currentPositionMarker,
+            mapCenter = new google.maps.LatLng(14.668626, 121.24295),
+            map;
 
-                            tripHTML += "<tr>";
-                            tripHTML += "<td><h2>" + JSONObject.data[0].payment_mode + "</h2></td>";
-                            tripHTML += "<td><label id='trip_id' style='visibility:hidden'>" + JSONObject.data[0].id + "</label></td>";
-                            tripHTML += "<td><h2>" + JSONObject.data[0].fare_amount + "</h2></td>";
-                            tripHTML += "</tr>";
-                            tripHTML += "<tr>";
-                            tripHTML += "<td>Payment Mode</td>";
-                            tripHTML += "<td></td>";
-                            tripHTML += "<td>FareAmount</td>";
-                            tripHTML += "</tr>";
+        // change the zoom if you want
+        function initializeMap()
+        {
+            map = new google.maps.Map(document.getElementById('map_canvas'), {
+               zoom: 18,
+               center: mapCenter,
+               mapTypeId: google.maps.MapTypeId.ROADMAP
+             });
+        }
 
+        function locError(error) {
+            // tell the user if the current position could not be located
+            alert("The current position could not be found!");
+        }
 
-                            // Replace driver and trip’s tbody html with peopleHTML
-                            $("#driver tbody").html(driverHTML);
-                            $("#trip tbody").html(tripHTML);
-                        } else //Error retrieving booking details
-                        {
-                            //window.alert("Error retrieving booking details.");
-                            //window.location.href = "./home.html";
-                        }
-
-                    }
-                });
-            }
-
-            // you can specify the default lat long
-            var map,
-                    currentPositionMarker,
-                    mapCenter = new google.maps.LatLng(14.668626, 121.24295),
-                    map;
-
-            // change the zoom if you want
-            function initializeMap()
-            {
-                map = new google.maps.Map(document.getElementById('map_canvas'), {
-                    zoom: 18,
-                    center: mapCenter,
-                    mapTypeId: google.maps.MapTypeId.ROADMAP
-                });
-            }
-
-            function locError(error) {
-                // tell the user if the current position could not be located
-                alert("The current position could not be found!");
-            }
-
-            // current position of the user
-            function setCurrentPosition(pos) {
-                currentPositionMarker = new google.maps.Marker({
-                    map: map,
-                    position: new google.maps.LatLng(
-                            pos.coords.latitude,
-                            pos.coords.longitude
-                            ),
-                    title: "Current Position"
-                });
-                map.panTo(new google.maps.LatLng(
-                        pos.coords.latitude,
-                        pos.coords.longitude
-                        ));
-            }
-
-            function displayAndWatch(position) {
-
-                // set current position
-                setCurrentPosition(position);
-
-                // watch position
-                watchCurrentPosition();
-            }
-
-            function watchCurrentPosition() {
-                var positionTimer = navigator.geolocation.watchPosition(
-                        function (position) {
-                            setMarkerPosition(
-                                    currentPositionMarker,
-                                    position
-                                    );
-                        });
-            }
-
-            function setMarkerPosition(marker, position) {
-                marker.setPosition(
-                        new google.maps.LatLng(
-                                position.coords.latitude,
-                                position.coords.longitude)
-                        );
-            }
-
-            function initLocationProcedure() {
-                initializeMap();
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(displayAndWatch, locError);
-                } else {
-                    // tell the user if a browser doesn't support this amazing API
-                    alert("Your browser does not support the Geolocation API!");
-                }
-            }
-
-
-
-
-            // initialize with a little help of jQuery
-            $(document).ready(function () {
-                initLocationProcedure();
-                initTripDetails();
+        // current position of the user
+        function setCurrentPosition(pos) {
+            currentPositionMarker = new google.maps.Marker({
+                map: map,
+                position: new google.maps.LatLng(
+                    pos.coords.latitude,
+                    pos.coords.longitude
+                ),
+                title: "Current Position"
             });
+            map.panTo(new google.maps.LatLng(
+                    pos.coords.latitude,
+                    pos.coords.longitude
+                ));
+        }
 
-            function confirmCancelBooking()
-            {
-                var answer = confirm("Are you sure you want to cancel booking?");
-                if (answer)
-                {
-                    cancelBooking();
-                } else
-                    return false;
-            }
+        function displayAndWatch(position) {
 
-            function  cancelBooking()
-            {
+            // set current position
+            setCurrentPosition(position);
 
-                var baseUrl = "http://localhost:8080/betacars";
-                var trip_id = document.getElementById("trip_id").textContent;
-                $.ajax({
-                    type: "POST",
-                    data: {
-                        "trip_id": trip_id
-                    },
-                    url: baseUrl + '/api_passenger_cancel_booking.php',
-                    dataType: "json",
-                    success: function (JSONObject) {
-                        var return_code = (JSONObject.status[0].return_code);
-                        if (return_code == 0) {
-                            window.location.href = "home.html";
-                        } else if (return_code == 1) {
-                            window.alert("Error cancelling booking.");
-                        }
-                    }
+            // watch position
+            watchCurrentPosition();
+        }
+
+        function watchCurrentPosition() {
+            var positionTimer = navigator.geolocation.watchPosition(
+                function (position) {
+                    setMarkerPosition(
+                        currentPositionMarker,
+                        position
+                    );
                 });
+        }
 
+        function setMarkerPosition(marker, position) {
+            marker.setPosition(
+                new google.maps.LatLng(
+                    position.coords.latitude,
+                    position.coords.longitude)
+            );
+        }
 
+        function initLocationProcedure() {
+            initializeMap();
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(displayAndWatch, locError);
+            } else {
+                // tell the user if a browser doesn't support this amazing API
+                alert("Your browser does not support the Geolocation API!");
             }
-        </script>
+        }
 
-    </head>
+        // initialize with a little help of jQuery
+        $(document).ready(function() {
+            initLocationProcedure();
+        });
+    </script>
+</head>
 
-    <body style="margin: 0; padding: 0;">
-        <!-- display the map here, you can changed the height or style -->
-        <div id="map_canvas" style="height: 25em; margin: 0; padding: 0;"></div>
-        <div class="container">
-            <div class="driver-container">
-                <div class="driver-thumb">
-                    <img src="../www/img/driver.png" />
-                </div>
-                <div class="driver-content">
-                    <table id="driver">
-                        <thead>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div  class="trip-container">
-                <table id="trip" border="0">
-                    <thead>
-
-                    <th>
-                        <img   src="../www/img/Coin.jpg" /></th>
-                    <th></th>
-                    <th>
-                        <img   src="../www/img/fare.png" /></th>
-
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-            </div>
-            <div>
-                <button id="btnCancelBooking" onclick="confirmCancelBooking()">Cancel Booking</button>
-            </div>
-        </div>
-
+<body style="margin:0; padding:0;">
+    <!-- display the map here, you can changed the height or style -->
+    <div id="map_canvas" style="height:25em; margin:0; padding:0;"></div>
+    <div data-role="page" id="signup">
+        <div data-role="main" class="ui-content">
+            <label>Driver Details:</label>
+            <br>
+            <input type="text" readonly id='r_fname' />
+            <input type="text" readonly id='r_plate' />
+            <br>
+            <br>
+            <label>Trip Details:</label>
+            <br>
+            <input type="text" readonly id='r_fare' />
+            <input type="text" readonly id='r_duration' />
+        </div> <!-- main -->
         <div data-role="footer">
             <div id="result1"></div>
-        </div>
-        <!-- footer -->
-    </div>
-    <!-- page -->
-
-
+        </div> <!-- footer -->  
+    </div> <!-- page -->
 </body>
 
 </html>

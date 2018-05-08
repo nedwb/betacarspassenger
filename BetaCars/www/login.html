@@ -4,15 +4,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
     <title>Beta Cars</title>
-    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
 
-    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
-    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.js"></script>
 </head>
 
 <body>    
     <div data-role="page" id="login">
+    <div id="logo">
+        	<img src="img/betacars.png" alt="logo">
+        </div>
         <div data-role="header">
             <h1>Login</h1>
         </div> <!-- header -->
@@ -37,6 +40,8 @@
         function login()
         {
             var baseUrl = "https://betacars-webportal.000webhostapp.com";
+            //var baseUrl = "http://localhost/betacarswebportal";
+            
             var mobile = document.getElementById('l_mobile').value;
             var password = document.getElementById('l_password').value;
 

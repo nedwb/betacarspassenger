@@ -5,18 +5,29 @@
       <meta charset="utf-8">
       <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
       
-      <link rel="stylesheet" type="text/css" href="css/main.css">
-      <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
-
-      <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAn79_RPcO8QoDo5vatp7TMnWqB3fTf8FM&libraries=places&callback=initMap"async defer></script>
-  </head>
-  <body>
-      <input id="origin-input" class="controls" type="text" placeholder="Enter an origin location">
-      <input id="destination-input" class="controls" type="text" placeholder="Enter a destination location">
-      <div id="map"></div>
+      <!-- <link rel="stylesheet" type="text/css" href="css/main.css"> -->
+      <link rel="stylesheet" type="text/css" href="css/betacars.css">
+      <link rel="stylesheet" type="text/css" href="css/betacarsandroid.css">
+      <!-- jQuery -->
+      <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+	<!-- Google Maps Javascript API -->
+      <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDAjhXVABFxTOnBzKzZnC1dICeZ1fqDyDg&libraries=places&callback=initMap"async defer></script>
       
-      <button id="btnRegular" onclick="btnBookClicked('regular')" class="controls_btn">Regular Car</button>
-      <button id="btnPremium" onclick="btnBookClicked('premium')" class="controls_btn">Premium Car</button>
+  </head>
+  <body style="margin-top: 60px;">
+  
+		<div id="navbar">
+			<button id="btnRegular" onclick="btnBookClicked('regular')" >Regular Car</button>
+      		<button id="btnPremium" onclick="btnBookClicked('premium')" >Premium Car</button>
+		</div>  
+  		
+  	<div>	
+  	  <input id="origin-input" placeholder="Enter an origin location" autocomplete="off" style="z-index: 0; position: absolute; left: 0px; top: 0px;width: 250px;height: 20px;" type="text">
+      <input id="destination-input" placeholder="Enter a destination location" autocomplete="off" style="z-index: 0; position: absolute; top: 30px; left: 0px;width: 250px;height: 20px;" type="text">
+  	</div>	
+      
+      
+      <div id="map"></div>
       
       <script>
           var mobile = localStorage.getItem("mobile");
@@ -37,12 +48,19 @@
                   fullscreenControl: false
               });
               
-              navigator.geolocation.getCurrentPosition(function(position) {
+              navigator.geolocation.getCurrentPosition(function(position){
                   var pos = {
                       lat: position.coords.latitude,
-                      lng: position.coords.longitude
+                      lng: position.coords.longitude,
                   };
-                  map.setCenter(pos);
+                  
+                  var opt = {
+                	        enableHighAccuracy: true
+                	    };
+                  
+                  map.setCenter(pos, opt);
+                  
+                  
                   
                   // Capture the origin position coordinates.
                   origin_position = position.coords.latitude + "," + position.coords.longitude;
@@ -50,11 +68,14 @@
                   // Use Geocoder to get current address and fill out the origin text box.
                   var geocoder = new google.maps.Geocoder;
                   var latlng = {lat: position.coords.latitude, lng: position.coords.longitude};
+                  var posAccuracy = {accuracy: position.coords.accuracy};
                   geocoder.geocode({'location': latlng}, function(results, status) {
+                	  
                       if (status === 'OK') {
                           if (results[0]) {
                               document.getElementById('origin-input').value = results[0].formatted_address;
                               origin_placeid = results[0].place_id;
+                             //window.alert(results[0].geometry.location_type);
                           } else {
                               window.alert('No results found.');
                           }
@@ -66,6 +87,8 @@
               
               new AutocompleteDirectionsHandler(map);
           }
+          
+          
           
           function btnBookClicked(input) {
               if (!origin_placeid || !destin_placeid) {
@@ -180,8 +203,8 @@
 
             this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(originInput);
             this.map.controls[google.maps.ControlPosition.LEFT_TOP].push(destinationInput);
-            this.map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(btnRegular);
-            this.map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(btnPremium);
+            /* this.map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(btnRegular);
+            this.map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(btnPremium); */
         }
                            
         // Sets a listener on a radio button to change the filter type on Places

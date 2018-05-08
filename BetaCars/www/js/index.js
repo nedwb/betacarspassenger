@@ -35,6 +35,20 @@ var app = {
     onDeviceReady: function() {
         console.log('Received Device Ready Event');
         console.log('calling setup push');
+
+        // Dynamically load the correct stylesheet in onDeviceReady
+        var node = document.createElement('link');
+        node.setAttribute('rel', 'stylesheet');
+        node.setAttribute('type', 'text/css');
+        if(cordova.platformId == 'ios'){
+        	node.setAttribute('href', 'betacarsios.css');
+        	window.StatusBar.overlaysWebView(false);
+        	window.StatusBar.styleDefault();
+        } else {
+          node.setAttribute('href', 'betacarsandroid.css');
+          window.StatusBar.backgroundColorByHexString('#1565C0');
+        }
+        document.getElementByTagName('head')[0].appendChild(node);
         app.setupPush();
     },
     setupPush: function() {

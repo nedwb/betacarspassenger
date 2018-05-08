@@ -1,0 +1,21 @@
+/* Android specific CSS */
+
+body{
+    font-family: Roboto, sans-serif;
+}
+#navbar{
+    background-color: #ff3600;
+    color: white;
+    box-shadow: darkgray 3px 3px 5px;
+}
+#btnRegular, #btnPremium{
+    border: 1px white solid;
+}
+button{
+    background-color: #ed0000;
+    color: white;
+}
+#map{
+    box-shadow: darkgray 3px 3px 5px;
+    border: 1px black solid;
+}
