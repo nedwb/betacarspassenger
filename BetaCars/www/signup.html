@@ -40,7 +40,7 @@
     <script>
         function signup()
         {
-            var baseUrl = "https://betacars-webportal.000webhostapp.com";
+            var baseUrl = "http://www.betacars.net";
             var fname = document.getElementById('r_fname').value;
             var lname = document.getElementById('r_lname').value;
             var mobile = document.getElementById('r_mobile').value;
@@ -54,7 +54,7 @@
                     if (return_code == 0) {
                         window.alert("Welcome to Beta Cars, " + jsonObj.data[0].f_name + " " + jsonObj.data[0].l_name + "!");
                         localStorage.setItem("mobile",mobile);
-                        window.location.href = "./home.html";
+                        window.location.href = "home.html";
                     }
                     else if(return_code == 1) {
                         window.alert("Mobile no. already registered.");
