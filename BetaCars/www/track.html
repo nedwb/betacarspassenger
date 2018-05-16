@@ -11,7 +11,7 @@
         <script type="text/javascript">
             function initTripDetails()
             {
-                var baseUrl = "http://localhost:8080/betacars";
+                var baseUrl = "http://www.betacars.net";
 
                 //2018-05-05 JYDP:Will locate trip_id pass by home.html to track.html via GET method
                 var parameter = window.location.search.substring(1).split("=");//Return value should be trip_id=<the id of the trip> e.g.,trip_id=23
@@ -157,7 +157,7 @@
             function  cancelBooking()
             {
 
-                var baseUrl = "http://localhost:8080/betacars";
+                var baseUrl = "http://www.betacars.net";
                 var trip_id = document.getElementById("trip_id").textContent;
                 $.ajax({
                     type: "POST",
